@@ -8,12 +8,23 @@ from django.views.generic import (
 from .models import Customer
 from .forms import CustomerForm
 from django.urls import reverse
+from django.db.models import Q
 
 
 class CustomerListView(ListView):
     template_name = 'customer/customer-list.html'
+    paginate_by = 5
     model = Customer
-    queryset = Customer.objects.all()
+
+    def get_queryset(self):
+        name = self.request.GET.get('name')
+        if name:
+            object_list = self.model.objects.filter(
+                Q(firstName__icontains=name) | Q(lastName__icontains=name)
+            )
+        else:
+            object_list = self.model.objects.all()
+        return object_list
 
 
 class CustomerCreateView(CreateView):
